@@ -5,6 +5,8 @@ on:
   push:
     branches: [main]
     paths:
+      - "**.py"
+      - "**.jpg"
       - "bharat-os/**"
       - ".github/workflows/build-bharat-os.yml"
 
@@ -26,6 +28,20 @@ jobs:
 
       - name: Install packages
         run: python -m pip install pyinstaller pillow
+
+      - name: Prepare uploaded folder structure
+        shell: pwsh
+        run: |
+          if (-not (Test-Path "bharat-os/Bharat_OS.py")) {
+            New-Item -ItemType Directory -Force "bharat-os" | Out-Null
+            Copy-Item "Bharat_OS.py", "wp7231692.jpg" -Destination "bharat-os"
+            if (Test-Path "bharat") {
+              Copy-Item "bharat" -Destination "bharat-os" -Recurse -Force
+            } else {
+              New-Item -ItemType Directory -Force "bharat-os/bharat" | Out-Null
+              Copy-Item "__init__.py", "security.py", "downloader.py", "system_tools.py", "paths.py" -Destination "bharat-os/bharat"
+            }
+          }
 
       - name: Check Python code
         working-directory: bharat-os
