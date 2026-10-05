@@ -1,0 +1,10 @@
+1. Extract this ZIP.
+2. Create a GitHub repository with default branch main.
+3. Upload the bharat-os folder and the .github folder to the repository root. Do not upload the ZIP itself.
+4. If your file picker hides .github, create .github/workflows/build-bharat-os.yml with Add file > Create new file and paste the extracted workflow contents.
+5. Open Actions > Build Bharat OS Windows EXE. The upload starts the build automatically, or use Run workflow.
+6. Wait for the green tick, download Bharat-OS-Windows from Artifacts, extract and run Bharat-OS.exe.
+
+Python is included in the EXE. This is a desktop app, not a bootable OS.
+The first launch asks you to create a password (minimum 8 characters).
+The workflow checks imports and EXE window startup on Windows. The Windows build has not been run for this ZIP yet.

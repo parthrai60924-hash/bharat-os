@@ -1,0 +1,50 @@
+name: Build Bharat OS Windows EXE
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'bharat-os/**'
+      - '.github/workflows/build-bharat-os.yml'
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install build dependencies
+        run: python -m pip install pyinstaller pillow
+      - name: Check Python sources and imports
+        working-directory: bharat-os
+        run: |
+          python -m compileall -q .
+          python -c "import Bharat_OS; from bharat import security, downloader, system_tools; from PIL import ImageTk"
+      - name: Package standalone EXE
+        working-directory: bharat-os
+        run: python -m PyInstaller --noconfirm --clean --onefile --windowed --name Bharat-OS --add-data "wp7231692.jpg;." --collect-all PIL Bharat_OS.py
+      - name: Check packaged window starts
+        shell: pwsh
+        run: |
+          $process = Start-Process -FilePath "bharat-os/dist/Bharat-OS.exe" -PassThru
+          try {
+            $found = $false
+            for ($i = 0; $i -lt 60; $i++) {
+              Start-Sleep -Seconds 2
+              $windows = Get-Process -Name "Bharat-OS" -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowTitle -like "Bharat OS*" }
+              if ($windows) { $found = $true; break }
+              $process.Refresh()
+              if ($process.HasExited) { throw "EXE exited before opening its window" }
+            }
+            if (-not $found) { throw "No Bharat OS window appeared" }
+          } finally {
+            Get-Process -Name "Bharat-OS" -ErrorAction SilentlyContinue | Stop-Process -Force
+          }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Bharat-OS-Windows
+          path: bharat-os/dist/Bharat-OS.exe
+          if-no-files-found: error
